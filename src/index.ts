@@ -3,6 +3,12 @@ import cors from 'cors'
 import morgan from 'morgan'
 import { configDotenv } from 'dotenv'
 import { AppDataSource } from './db'
+import { UserService } from './services/user.service'
+import { PerfumeService } from './services/perfume.service'
+import { CartService } from './services/cart.service'
+import { UserRoute } from './routes/user.route'
+import { PerfumeRoute } from './routes/perfume.route'
+import { CartRoute } from './routes/cart.route'
 
 const app = express()
 app.use(express.json())
@@ -18,11 +24,14 @@ AppDataSource.initialize().then(() => {
     })
 }).catch((e) => console.log(e))
 
-app.get('/', (req,res)=>{
+app.use('/api/user', UserRoute)
+app.use('/api/perfume', PerfumeRoute)
+app.use('/api/cart', CartRoute)
 
-    res.json({
-        message: "Hello it is me!"
-    })
+app.get('/', async (req,res)=>{
+
+    res.json( await PerfumeService.getByName("Miss Dior")
+    )
 })
 
 app.get('*', (req,res)=>{
