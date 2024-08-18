@@ -1,49 +1,44 @@
-// import { EntityNotFoundError } from "typeorm";
-// import { AppDataSource } from "../db";
-// import { Cart } from "../entities/Cart";
-
-// const repo = AppDataSource.getRepository(Cart)
-
-// export class CartService {
-//     static async getAllOrders() {
-//         const data = await repo.find()
-//         return data;
-//     }
-// } ovo moram bolje da proverim 
 import { EntityNotFoundError } from "typeorm"; 
 import { AppDataSource } from "../db"; 
 import { Cart } from "../entities/Cart"; 
+import { check } from "../utils";
+import { CartModel } from "../models/cart.model";
 
-const cartRepo = AppDataSource.getRepository(Cart); 
+const repo = AppDataSource.getRepository(Cart); 
 
 
 export class CartService { 
   static async getAllOrders() { 
-    const data = await cartRepo.find({ 
+    const data = await repo.find({ 
       relations: ["perfume", "user"], 
     }); 
-    return data; 
+    return check(data);
   } 
 
-static async getById(orderId: number) { 
-    const cart = await cartRepo.findOne({ 
-      where: { 
-        orderId: orderId 
-    }, 
-      relations: ["perfume", "user"], 
-
-    });
-
-    if (!cart) { 
-
-      throw new EntityNotFoundError(Cart, orderId); 
-
-    } 
-    return cart; 
+  static async getCartById(orderId: number) { 
+    const data = await repo.findOneBy({ orderId }); 
+    return check(data); 
   } 
+
+// static async getCartById(orderId: number) { 
+//     const cart = await cartRepo.findOne({ 
+//       where: { 
+//         orderId: orderId 
+//     }, 
+//       relations: ["perfume", "user"], 
+
+//     });
+
+//     if (!cart) { 
+
+//       throw new EntityNotFoundError(Cart, orderId); 
+
+//     } 
+//     return cart; 
+//   } 
 
 static async getByUserId(userId: number) { 
-    const carts = await cartRepo.find({ 
+    const data = await repo.find({ 
       where: { 
         user: { 
             userId: userId 
@@ -53,11 +48,11 @@ static async getByUserId(userId: number) {
 
     });
 
-    return carts; 
+    return check(data); 
   } 
 
 static async getByPerfumeId(perfumeId: number) { 
-    const carts = await cartRepo.find({ 
+    const data = await repo.find({ 
       where: {
          perfume: { 
             perfumeId: perfumeId 
@@ -67,32 +62,48 @@ static async getByPerfumeId(perfumeId: number) {
 
     });
 
-    return carts; 
+    return check(data); 
   } 
 
-  /*static async createCart(userId: number, perfumeId: number, price: number) {  
-    const cart = cartRepo.create({  
-      userId: userId, 
-      perfumeId: perfumeId, 
-      totalPrice: price, ne radi
-    });  
+  static async createCart(model: CartModel) {
 
-    await cartRepo.save(cart);  
-    return cart;  
-  }*/
+    const data = await repo.save({
+      orderId: model.orderId,
+      perfumeId: model.perfumeId,
+      totalPrice: model.totalPrice,
+      userId: model.userId
+    })
+
+    return check(data);
+  }
+
+  static async updateCart(id: number, model: CartModel) {
+ 
+      const data = await repo.findOneBy({ orderId: id }); 
+    if (!data) { 
+        throw new EntityNotFoundError(Cart, id); 
+      } 
+      data.perfumeId = model.perfumeId; 
+      data.totalPrice = model.totalPrice; 
+      data.userId = model.userId;  
+    
+      const updatedCart = await repo.save(data); 
+      return check(updatedCart); 
+    
+  }
 
 static async deleteCart(orderId: number) { 
-    const cart = await cartRepo.findOne({ 
+    const data = await repo.findOne({ 
       where: { 
         orderId: orderId, 
       }, 
     }); 
 
-if (!cart) { 
+if (!data) { 
   throw new EntityNotFoundError(Cart, orderId); 
 } 
  
-await cartRepo.delete(cart); 
+await repo.delete(data); 
 
 } 
 

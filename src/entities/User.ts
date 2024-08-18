@@ -17,7 +17,7 @@ export class User {
   email: string;
 
   @Column("varchar", { name: "phone", length: 20 })
-  phone: string;
+  phone: any;
 
   @Column("varchar", { name: "orders", nullable: true, length: 255 })
   orders: string | null;
