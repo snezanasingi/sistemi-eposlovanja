@@ -13,7 +13,7 @@ export class Perfume {
   brand: string;
 
   @Column("varchar", { name: "price", length: 15 })
-  price: string;
+  price: any;
 
   @OneToMany(() => Cart, (cart) => cart.perfume)
   carts: Cart[];
