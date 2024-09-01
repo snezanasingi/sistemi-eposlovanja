@@ -1,4 +1,4 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, ManyToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Cart } from "./Cart";
 
 @Entity("perfume", { schema: "project" })
@@ -12,9 +12,9 @@ export class Perfume {
   @Column("varchar", { name: "brand", length: 255 })
   brand: string;
 
-  @Column("varchar", { name: "price", length: 15 })
-  price: any;
+  @Column("decimal", { name: "price", precision: 10, scale: 2 })
+  price: number;
 
-  @OneToMany(() => Cart, (cart) => cart.perfume)
+  @ManyToMany(() => Cart, (cart) => cart.perfumes)
   carts: Cart[];
 }
