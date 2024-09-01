@@ -15,13 +15,14 @@ CartRoute.get('/:id', (req, res) => {
 })
 
 CartRoute.post('/', (req,res) => {
+
     handleRequest(res, CartService.createCart(req.body))
 })
 
-CartRoute.put('/:id', (req,res) => {
-    const id = req.params.id as any as number
-    handleRequest(res, CartService.updateCart(id, req.body))
-})
+// CartRoute.put('/:id', (req,res) => {
+//     const id = req.params.id as any as number
+//     handleRequest(res, CartService.updateCart(id, req.body))
+// })
 
 CartRoute.delete('/:id', (req,res) => {
     const id = req.params.id as any as number

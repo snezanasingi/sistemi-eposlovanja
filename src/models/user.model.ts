@@ -1,11 +1,12 @@
 import { Cart } from "../entities/Cart";
 
-export interface UserMOdel {
+export interface UserModel {
+    userId: number;
     username: string; 
     password: string; 
     email: string; 
-    phone: any;
-    orders: string | null;
+    phone: string | null;
+   // orders: string | null;
     carts: Cart[];
     
 }

@@ -1,16 +1,20 @@
-import { EntityNotFoundError } from "typeorm"; 
+import { EntityNotFoundError, In } from "typeorm"; 
 import { AppDataSource } from "../db"; 
 import { Cart } from "../entities/Cart"; 
 import { check } from "../utils";
 import { CartModel } from "../models/cart.model";
+import { Perfume } from "../entities/Perfume";
+import { User } from "../entities/User";
 
 const repo = AppDataSource.getRepository(Cart); 
+const userRepo = AppDataSource.getRepository(User);
+const perfumeRepo = AppDataSource.getRepository(Perfume);
 
 
 export class CartService { 
   static async getAllOrders() { 
     const data = await repo.find({ 
-      relations: ["perfume", "user"], 
+      relations: ["perfumes", "user"], 
     }); 
     return check(data);
   } 
@@ -20,23 +24,6 @@ export class CartService {
     return check(data); 
   } 
 
-// static async getCartById(orderId: number) { 
-//     const cart = await cartRepo.findOne({ 
-//       where: { 
-//         orderId: orderId 
-//     }, 
-//       relations: ["perfume", "user"], 
-
-//     });
-
-//     if (!cart) { 
-
-//       throw new EntityNotFoundError(Cart, orderId); 
-
-//     } 
-//     return cart; 
-//   } 
-
 static async getByUserId(userId: number) { 
     const data = await repo.find({ 
       where: { 
@@ -44,21 +31,7 @@ static async getByUserId(userId: number) {
             userId: userId 
         } }, 
 
-      relations: ["perfume", "user"], 
-
-    });
-
-    return check(data); 
-  } 
-
-static async getByPerfumeId(perfumeId: number) { 
-    const data = await repo.find({ 
-      where: {
-         perfume: { 
-            perfumeId: perfumeId 
-        } },
-
-      relations: ["perfume", "user"], 
+      relations: ["perfumes", "user"], 
 
     });
 
@@ -66,31 +39,37 @@ static async getByPerfumeId(perfumeId: number) {
   } 
 
   static async createCart(model: CartModel) {
+    try {
 
-    const data = await repo.save({
-      orderId: model.orderId,
-      perfumeId: model.perfumeId,
-      totalPrice: model.totalPrice,
-      userId: model.userId
-    })
+        const user = await userRepo.findOneBy({ userId: model.userId });
+        if (!user) {
+            
+            throw new Error('User not found');
+        }
 
-    return check(data);
-  }
+        const perfumes = await perfumeRepo.findBy({ perfumeId: In(model.perfumeId) });
+        if (!perfumes || perfumes.length !== model.perfumeId.length) {
+            
+            throw new Error('Some perfumes not found');
+        }
 
-  static async updateCart(id: number, model: CartModel) {
- 
-      const data = await repo.findOneBy({ orderId: id }); 
-    if (!data) { 
-        throw new EntityNotFoundError(Cart, id); 
-      } 
-      data.perfumeId = model.perfumeId; 
-      data.totalPrice = model.totalPrice; 
-      data.userId = model.userId;  
-    
-      const updatedCart = await repo.save(data); 
-      return check(updatedCart); 
-    
-  }
+        const cart = new Cart();
+        cart.orderId = model.orderId;
+        cart.totalPrice = model.totalPrice.toString(); 
+        cart.userId = model.userId;
+        cart.user = user;
+       // cart.perfumeId = model.perfumeId;
+        cart.perfumes = perfumes;
+        
+
+        const data = await repo.save(cart);
+       
+        return check(data);
+    } catch (error) {
+      
+        throw error; 
+    }
+}
 
 static async deleteCart(orderId: number) { 
     const data = await repo.findOne({ 
@@ -106,5 +85,4 @@ if (!data) {
 await repo.delete(data); 
 
 } 
-
 }

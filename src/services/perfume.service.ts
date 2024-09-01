@@ -42,7 +42,6 @@ export class PerfumeService {
 
     static async createPerfume(model: Perfume) { 
       const data = await repo.save(model); 
-      console.log("Perfume is successfully created"); 
       return check(data);
     } 
 
@@ -63,7 +62,7 @@ export class PerfumeService {
           throw new Error("Perfume not found");  
         }  
         await repo.remove(data);  
-        console.log("Perfume is successfully deleted"); 
+  
         return true;  
       } catch (error) {  
         if (error instanceof EntityNotFoundError) {  
